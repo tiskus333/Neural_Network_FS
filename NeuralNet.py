@@ -4,8 +4,8 @@ class DenseLayer:
     def __init__(self, n_inputs, n_neurons):
         self.weights = np.random.rand(n_inputs,n_neurons)
         self.biases = np.zeros((1,n_neurons))
-        self.activations = np.zeros((1,n_neurons))
         self.derivatives = np.zeros((1,n_neurons))
+        self.activations = np.zeros((1,n_neurons))
     def forward(self, inputs):
         self.output = np.dot(inputs,self.weights) + self.biases
 
@@ -17,7 +17,7 @@ class ReLU:
 
 class Sigmoid:
     def forward(self,inputs):
-        return 1/(1+np.exp(inputs))
+        return 1/(1+np.exp(np.negative(inputs)))
     def backward(self,inputs):
         sig = self.forward(inputs)
         return  sig * (1-sig)
@@ -46,13 +46,13 @@ class NeuralNetwork:
             l = []
             for data,target in zip(train_data,targets):
                 out = self.forward_propagate(data)
-                error = out -target
+                error = out - target
                 l.append(MSE(out,target))
                 self.back_propagate(error)
                 self.gradient_descent(learning_rate)
-            accuracy = (1-(sum(l)/len(train_data)))*100
+            accuracy =  np.average(l)
             if (i+1)%10 == 0:
-                print("epochs:", i + 1, "==== accuracy:", accuracy)  
+                print("epochs:", i + 1, "==== error:", accuracy)  
 
 
     def test(self,test_data):
@@ -62,12 +62,12 @@ class NeuralNetwork:
         return self.forward_propagate(data)
     
     def forward_propagate(self,data):
-        tmp_data = self.activation_function.forward(data) 
+        tmp_data = self.activation_function.forward(data)
         for layer in self.layers:
             layer.forward(tmp_data)
             tmp_data = self.activation_function.forward(layer.output)
             layer.activations = tmp_data
-        return tmp_data
+        return self.layers[len(self.layers)-1].output
 
     def back_propagate(self,error):
         for i in reversed(range(len(self.layers)-1)):
@@ -83,12 +83,13 @@ class NeuralNetwork:
             #layer.biases -= layer.derivatives
             layer.weights -= layer.derivatives*learning_rate
 
-test1 = np.random.rand(30000,3)
-targets = np.array([[i[0]+i[1]+i[2]] for i in test1])
+test1 = np.random.rand(3000,2)
+test1 /= 2
+targets = np.array([[i[0]+i[1]] for i in test1])
 
-nn = NeuralNetwork(3,[3,3],1,1,"ReLU")
+nn = NeuralNetwork(2,[5],1,1,"ReLU")
 nn.train(test1,targets,100,0.1)
-print(nn.predict([[0.9,0.4,0.1],[0.3,0.4,1],[0.6,0.1,1],[0.2,0.3,1]]))
+print(nn.predict([[0.3,0.1],[0.3,0.4],[0.3,0.1],[0.2,0.3]]))
 
 # for layer in nn.layers:
 #     print(layer.weights)
