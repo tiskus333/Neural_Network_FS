@@ -41,13 +41,12 @@ class NeuralNetwork:
                 out = self.forward_propagate(input_batch)
                 error = out - target_batch
                 l.append(MSE(out,target_batch))
-                self.back_propagate(error)
-                self.gradient_descent(learning_rate)
+                self.back_propagate(error,learning_rate)
                 j += batch_size
 
             accuracy = np.average(l)
             if (i+1)%10 == 0:
-                print("epochs:", i + 1, "==== error:", accuracy)  
+                print("epochs:", i + 1, "==== error:", np.sum(MSE(out,target_batch)))  
 
 
     def predict(self,inputs):
@@ -62,25 +61,19 @@ class NeuralNetwork:
             self.activations[i+1] = activation
         return activation
 
-    def back_propagate(self,error):
+    def back_propagate(self,error,learning_rate):
         for i in reversed(range(len(self.derivatives))):
-            activation = self.activations[i+1]
-            delta = error * self.activation_function.backward(activation)
+            delta = error * self.activation_function.backward(self.activations[i+1])
             self.derivatives[i] = np.dot(self.activations[i].T,delta)
             error = np.dot(delta,self.weights[i].T)
-        return error
+            self.biases[i] -= np.sum(delta,axis=0,keepdims = True)
+            self.weights[i] -= learning_rate*self.derivatives[i]
 
-    def gradient_descent(self,learning_rate):
-        for weights,biases,derivatives in zip(self.weights,self.biases,self.derivatives):
-            weights -= derivatives * learning_rate
-            # biases -= np.sum(derivatives,axis=0,keepdims = True)* learning_rate
+test1 = np.array([[random()/2 for _ in range(2)] for _ in range(3000)])
+targets = np.array([[i[0]*i[1]] for i in test1])
 
-
-test1 = np.array([[random()/2 for _ in range(2)] for _ in range(1000)])
-targets = np.array([[i[0]+i[1]] for i in test1])
-
-nn = NeuralNetwork(2,[5],1,"ReLU")
-nn.train(test1,targets,10,100,0.1)
-print(nn.predict([[0.3,0.1],[0.3,0.4],[0.3,0.1],[0.2,0.3],[-1,-2]]))
+nn = NeuralNetwork(2,[10,4],1,"SIGMOID")
+nn.train(test1,targets,16,100,0.1)
+print(nn.predict([[0.3,0.1],[0.3,0.4],[0.5,0.1],[0.2,0.3],[-1,-2]]))
 
 #https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
