@@ -74,7 +74,10 @@ test1 = np.array([[random()/2 for _ in range(2)] for _ in range(3000)])
 targets = np.array([[i[0]*i[1]] for i in test1])
 
 nn = NeuralNetwork(2,[10,4],1,"SIGMOID")
-nn.train(test1,targets,16,100,0.1)
-print(nn.predict([[0.3,0.1],[0.3,0.4],[0.5,0.1],[0.2,0.3],[-1,-2]]))
+
+inputs = [[0.3,0.1],[0.3,0.4],[0.5,0.1],[0.2,0.3],[-1,-2]]
+results = nn.predict(inputs)
+for num in range(len(results)):
+   print("Num: "+str(round(results[num][0],5))+" For " + str(inputs[num][0])+"*"+str(inputs[num][1]))
 
 #https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
