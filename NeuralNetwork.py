@@ -14,6 +14,10 @@ class Sigmoid:
         sig = self.forward(inputs)
         return  sig * (1-sig)
 
+def softmax(input):
+    e_x = np.exp(input - np.max(input))
+    return e_x/np.sum(e_x,axis=0);
+
 def MSE(outputs, targets):
     return (np.square(np.subtract(targets,outputs))).mean(axis=1)
 
