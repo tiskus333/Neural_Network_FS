@@ -22,7 +22,10 @@ def softmax(scores):
 def cross_entropy_loss(output,label):
     m = label.shape[0]
     loss = -np.sum(label*np.log(output + 1e-12))/m
-    return loss
+    return np.squeeze(loss)
+
+def cross_entropy_derivative(output, label):
+    return label - output
 
 def MSE(outputs, targets):
     return (np.square(np.subtract(targets,outputs))).mean(axis=1)
@@ -30,8 +33,8 @@ def MSE(outputs, targets):
 class NeuralNetwork:
     def __init__(self,input_layer,hidden_layers = [3,3],output_layer=1,activation_function="ReLU"):
         self.layers = [input_layer] + hidden_layers + [output_layer]
-        self.weights = [np.random.uniform(-1/np.sqrt(self.layers[i]),1/np.sqrt(self.layers[i+1]),size=(self.layers[i],self.layers[i+1])) for i in range(len(self.layers)-2)]
-        self.weights.append(np.zeros((self.layers[-2],self.layers[-1])))
+        self.weights = [np.random.uniform(-1/np.sqrt(self.layers[i]),1/np.sqrt(self.layers[i+1]),size=(self.layers[i],self.layers[i+1])) for i in range(len(self.layers)-1)]
+        # self.weights.append(np.zeros((self.layers[-2],self.layers[-1])))
         print("weights:\n",self.weights)
         self.biases = [np.zeros((1,self.layers[i+1])) for i in range(len(self.layers)-1)]
         print("biases:\n",self.biases)
@@ -47,7 +50,7 @@ class NeuralNetwork:
         else:   
             print("No such function")
     
-    def train(self,train_inputs,targets,batch_size,epochs,learning_rate):
+    def train(self,train_inputs,targets,epochs,batch_size,learning_rate):
         for i in range(epochs):
             l = []
             j=0
@@ -56,7 +59,7 @@ class NeuralNetwork:
                 target_batch = targets[j:j+batch_size]
                 out = self.forward_propagate(input_batch)
                 error = cross_entropy_loss(out,target_batch)
-                print("error:\n",error)
+                # print("error:\n",error)
                 l.append(error)
                 self.back_propagate(error,learning_rate)
                 j += batch_size
@@ -72,38 +75,66 @@ class NeuralNetwork:
     def forward_propagate(self,inputs):
         activation = inputs
         self.activations[0] = inputs
-        print("inputs \n",inputs)
+        # print("inputs \n",inputs)
         for i in range(len(self.layers)-2):
             layer_output = np.dot(activation,self.weights[i]) + self.biases[i]
-            print("layer output", i, '\n', layer_output)
+            # print("layer output", i, '\n', layer_output)
             activation = self.activation_function.forward(layer_output)
             self.activations[i+1] = activation
-            print("activation layer ", i, '\n', activation)
+            # print("activation layer ", i, '\n', activation)
         layer_output = np.dot(activation,self.weights[-1]) + self.biases[-1]
-        print("Last layer output\n", layer_output)
+        # print("Last layer output\n", layer_output)
         activation = softmax(layer_output)
         self.activations[-1] = activation
-        print("Softmax activation layer\n", activation)
+        # print("Softmax activation layer\n", activation)
         return activation
 
     def back_propagate(self,error,learning_rate):
-        for i in reversed(range(len(self.derivatives))):
+        # print("\nBACK PROPAGATION")
+        # print("weights:\n",self.weights)
+        # print("biases:\n",self.biases)
+        # print("activations:\n",self.activations)
+        # print("derivatives:\n",self.derivatives,'\n')
+
+        delta = error * self.activations[-1]
+        print("delta:\n",delta)
+        self.derivatives[-1] = np.dot(self.activations[-1].T,delta)
+        print("derivatives:\n",self.derivatives[-1])
+        error = np.dot(delta,self.weights[-1].T)
+        self.weights[-1] -= learning_rate*self.derivatives[-1]
+
+        for i in reversed(range(len(self.derivatives)-1)):
             delta = error * self.activation_function.backward(self.activations[i+1])
-            print("delta:\n",delta)
-            self.derivatives[i] = np.dot(delta,self.activations[i].T)
+            # print("delta:\n",delta)
+            self.derivatives[i] = np.dot(self.activations[i],delta)
+            print("derivatives:\n",self.derivatives[i])
             error = np.dot(delta,self.weights[i].T)
             # self.biases[i] -= np.sum(delta,axis=0,keepdims = True)
             self.weights[i] -= learning_rate*self.derivatives[i]
-            print("weights\n",self.weights)
+            # print("weights\n",self.weights)
 
-test1 = np.array([[random()/2 for _ in range(2)] for _ in range(3000)])
-targets = np.array([[i[0]*i[1]] for i in test1])
+# test1 = np.array([[random()/2 for _ in range(2)] for _ in range(3000)])
+# targets = np.array([[i[0]*i[1]] for i in test1])
 
-nn = NeuralNetwork(4,[3],2,"ReLU")
-nn.train(np.array([[0,0,0,0],[0,0,1,0],[1,0,0,0],[1,1,0,0],[1,1,0,1]]),np.array([[1,0],[0,1],[0,1],[1,0],[1,0]]),1,1,0.1)
+test2 = np.random.randint(0,2,(1000,4))
+target2 = np.zeros((1000,2))
+for x,y in zip(test2,target2):
+    if x[0] +x[2]  == 1:
+        y[1] = 1
+    else:
+        y[0] = 1
+
+
+nn = NeuralNetwork(4,[3],2,"SIGMOID")
+nn.train(test2,target2,10,1,0.1)
 # inputs = [[0.3,0.1],[0.3,0.4],[0.5,0.1],[0.2,0.3],[-1,-2]]
-results = nn.predict([0,1,0,0])
-print("RESULTS: ",results)
+print("RESULTS: ")
+print(nn.predict([0,1,1,0]))
+print(nn.predict([0,0,1,0]))
+print(nn.predict([0,1,1,1]))
+print(nn.predict([1,1,1,1]))
+print(nn.predict([0,0,0,0]))
+
 # for num in range(len(results)):
 #    print("Num: "+str(round(results[num][0],5))+" For " + str(inputs[num][0])+"*"+str(inputs[num][1]))
 
