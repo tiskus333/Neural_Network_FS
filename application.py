@@ -1,6 +1,8 @@
 #!/usr/bin/python3 -i
 
+import os
 import sys
+import pandas as pd
 
 from NeuralNetwork import *
 
@@ -49,10 +51,9 @@ class DataClass:
             if len(values) != 2:
                 raise AttributeError
             values = list(values)
-            print(values)
             d = {values[0]: 0, values[1]: 1}
             scaled[column] = scaled[column].map(d)
         return scaled
 
     def nominal_conversion(self, raw):
-        raise NotImplementedError
+        return pd.get_dummies(raw)
