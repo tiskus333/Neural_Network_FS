@@ -59,3 +59,10 @@ class DataClass:
 
     def nominal_conversion(self, raw):
         return pd.get_dummies(raw)
+
+    def get_num_of_rows(self):
+        return self.data_to_network.shape
+
+    def get_num_of_columns(self):
+        a, b = self.data_to_network.shape
+        return b
