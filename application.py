@@ -33,6 +33,8 @@ class DataClass:
         self.data_binary_scaled = self.binary_conversion(self.data_binary_raw)
         self.data_nominal_scaled = self.nominal_conversion(
             self.data_nominal_raw)
+        self.data_to_network = pd.concat(
+            [self.data_numeric_scaled, self.data_binary_scaled, self.data_nominal_scaled], axis=1)
 
     def normal_scaling(self, raw):
         '''
