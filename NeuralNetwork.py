@@ -21,8 +21,7 @@ def softmax(scores):
 
 def cross_entropy_loss(output,label):
     m = label.shape[0]
-    log_likelihood = -np.log(output[range(m),label])
-    loss = np.sum(log_likelihood) / m
+    loss = -np.sum(label*np.log(output + 1e-12))/m
     return loss
 
 def MSE(outputs, targets):
@@ -95,16 +94,19 @@ class NeuralNetwork:
             error = np.dot(delta,self.weights[i].T)
             # self.biases[i] -= np.sum(delta,axis=0,keepdims = True)
             self.weights[i] -= learning_rate*self.derivatives[i]
+            print("weights\n",self.weights)
 
 test1 = np.array([[random()/2 for _ in range(2)] for _ in range(3000)])
 targets = np.array([[i[0]*i[1]] for i in test1])
 
 nn = NeuralNetwork(4,[3],2,"ReLU")
-nn.train(np.array([[0,0,0,0],[0,0,1,0],[1,0,0,0],[1,1,0,0],[1,1,0,1]]),np.array([[1,0],[0,1],[0,1],[1,0],[1,0]]),2,100,0.1)
+nn.train(np.array([[0,0,0,0],[0,0,1,0],[1,0,0,0],[1,1,0,0],[1,1,0,1]]),np.array([[1,0],[0,1],[0,1],[1,0],[1,0]]),1,1,0.1)
 # inputs = [[0.3,0.1],[0.3,0.4],[0.5,0.1],[0.2,0.3],[-1,-2]]
-results = nn.predict([0.1,0.2,0.3,0.1])
+results = nn.predict([0,1,0,0])
 print("RESULTS: ",results)
 # for num in range(len(results)):
 #    print("Num: "+str(round(results[num][0],5))+" For " + str(inputs[num][0])+"*"+str(inputs[num][1]))
 
 #https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
+
+# print(cross_entropy_loss(np.array([[0.25,0.25,0.25,0.25],[0.01,0.01,0.01,0.96]]),np.array([[0,0,0,1],[0,0,0,1]])))
