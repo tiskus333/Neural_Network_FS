@@ -38,18 +38,9 @@ class Sigmoid:
 
 class Softmax:
     def forward(self,inputs):
-        """Compute the softmax of vector x."""
-        # exps = np.exp(inputs - inputs.max())
-        # return exps / np.sum(exps)
         z = np.exp(inputs - np.max(inputs, axis=-1, keepdims=True))
         prob = z / np.sum(z, axis=-1,keepdims=True)
         return prob
-    def backward(self,inputs):
-        tmp = self.forward(inputs)
-        grad_coeff = np.zeros_like(tmp)
-        # grad_coeff[np.arange(inputs.shape[0]), y] = -1
-        grad_coeff += tmp
-        return grad_coeff
 
 def MSE(outputs, targets):
     return (np.square(np.subtract(targets,outputs))).mean(axis=1)
@@ -79,9 +70,9 @@ class NeuralNetwork:
                 target_batch = targets[j:j+batch_size]
                 out = self.forward_propagate(input_batch)
                 error = cross_entropy_loss(out,target_batch)
+                delta = error*(out - target_batch)
                 l.append(error)
-                self.back_propagate(input_batch,out-target_batch,error,learning_rate)
-                # self.gradient_descent(learning_rate)
+                self.back_propagate(input_batch,delta,learning_rate)
             if (i+1)%10 == 0:
                 print("epochs:", i + 1, "==== error:", np.average(l))  
 
@@ -98,8 +89,7 @@ class NeuralNetwork:
             tmp_data = layer.forward(tmp_data)
         return tmp_data
 
-    def back_propagate(self,inputs,delta,error,learning_rate):
-        delta = error * delta
+    def back_propagate(self,inputs,delta,learning_rate):
         self.layers[-1].derivatives = np.dot(self.layers[-2].activations.T,delta)
         self.layers[-1].biases -= learning_rate * np.sum(delta,axis=0)
         self.layers[-1].weights -= learning_rate * self.layers[-1].derivatives
@@ -112,54 +102,27 @@ class NeuralNetwork:
                 self.layers[i].derivatives = np.dot(self.layers[i-1].activations.T,delta)
             self.layers[i].biases -= learning_rate * np.sum(delta,axis=0)
             self.layers[i].weights -= learning_rate * self.layers[i].derivatives
-        # for layer in reversed(self.layers):
-        #     activation = layer.activations
-        #     delta = error * layer.activation_function.backward(activation)
-        #     layer.derivatives = np.dot(activation.T,delta)
-        #     error = np.dot(delta,layer.weights.T)
-        # return error
 
-    def gradient_descent(self,learning_rate):
-        for layer in self.layers:
-            layer.biases -= layer.derivatives
-            layer.weights -= layer.derivatives*learning_rate
-
-# test1 = np.random.rand(3000,2)
-# test1 /= 2
-# targets = np.array([[i[0]+i[1]] for i in test1])
 np.random.seed(1337)
 
 blue = np.random.randn(700, 2) + np.array([0, -3])
 pink = np.random.randn(700, 2) + np.array([3, 3])
 yellow = np.random.randn(700, 2) + np.array([-3, 3])
-
 feature_set = np.vstack([blue, pink, yellow])
-
 labels = np.array([0]*700 + [1]*700 + [2]*700)
-
 one_hot_labels = np.zeros((2100, 3))
-
 for i in range(2100):
     one_hot_labels[i, labels[i]] = 1
 
 plt.figure(figsize=(10,7))
 plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap='plasma', s=100, alpha=0.5)
-plt.show()
-
 
 nn = NeuralNetwork(2,[4,4],3,"relu")
-nn.train(feature_set,one_hot_labels,100,1,0.001)
+nn.train(feature_set,one_hot_labels,epochs=100,batch_size=1,learning_rate=0.001)
 print("RESULTS: ")
 print(nn.predict([0,-3]))
 print(nn.predict([2,2]))
 print(nn.predict([-2,3]))
-
-
-
-# nn.train(test1,targets,100,0.1)
-# print(nn.predict([[0.3,0.1],[0.3,0.4],[0.3,0.1],[0.2,0.3]]))
-
-# for layer in nn.layers:
-#     print(layer.weights)
+plt.show()
 
 #https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
