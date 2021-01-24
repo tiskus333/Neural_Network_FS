@@ -99,18 +99,19 @@ class NeuralNetwork:
         return tmp_data
 
     def back_propagate(self,inputs,delta,error,learning_rate):
-        layer2_error = error
-        # layer2_delta = layer2_error * self.layers[1].activations
-        layer2_delta = layer2_error * delta
-        self.layers[1].derivatives = np.dot(self.layers[0].activations.T,layer2_delta)
-        self.layers[1].biases -= learning_rate * np.sum(layer2_delta,axis=0)
-        self.layers[1].weights -= learning_rate * self.layers[1].derivatives
-
-        layer1_error = np.dot(layer2_delta,self.layers[1].weights.T)
-        layer1_delta = layer1_error * self.layers[0].activation_function.backward(self.layers[0].activations)
-        self.layers[0].derivatives = np.dot(inputs.T,layer1_delta)
-        self.layers[0].biases -= learning_rate * np.sum(layer1_delta,axis=0)
-        self.layers[0].weights -= learning_rate * self.layers[0].derivatives
+        delta = error * delta
+        self.layers[-1].derivatives = np.dot(self.layers[-2].activations.T,delta)
+        self.layers[-1].biases -= learning_rate * np.sum(delta,axis=0)
+        self.layers[-1].weights -= learning_rate * self.layers[-1].derivatives
+        for i in reversed(range(len(self.layers) - 1)):
+            error = np.dot(delta,self.layers[i+1].weights.T)
+            delta = error * self.layers[i].activation_function.backward(self.layers[i].activations)
+            if(i == 0):
+                self.layers[i].derivatives = np.dot(inputs.T,delta)
+            else:
+                self.layers[i].derivatives = np.dot(self.layers[i-1].activations.T,delta)
+            self.layers[i].biases -= learning_rate * np.sum(delta,axis=0)
+            self.layers[i].weights -= learning_rate * self.layers[i].derivatives
         # for layer in reversed(self.layers):
         #     activation = layer.activations
         #     delta = error * layer.activation_function.backward(activation)
@@ -146,8 +147,8 @@ plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap='plasma', s=100, 
 plt.show()
 
 
-nn = NeuralNetwork(2,[4],3,"relu")
-nn.train(feature_set,one_hot_labels,100,10,0.001)
+nn = NeuralNetwork(2,[4,4],3,"relu")
+nn.train(feature_set,one_hot_labels,100,1,0.001)
 print("RESULTS: ")
 print(nn.predict([0,-3]))
 print(nn.predict([2,2]))
