@@ -82,7 +82,7 @@ class NeuralNetwork:
                 # print("delta: ",delta)
                 l.append(error)
                 self.back_propagate(input_batch,delta,learning_rate)
-            if (i+1)%10 == 0:
+            if (i+1)%(int(epochs/100)) == 0:
                 print("epochs:", i + 1, "==== error:", np.average(l))  
             self.error_values.append(np.average(l))
 
