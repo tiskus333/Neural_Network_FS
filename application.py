@@ -8,11 +8,12 @@ from NeuralNetwork import *
 
 
 class DataClass:
-    numeric_values = ['age', 'Medu', 'Fedu', 'traveltime', 'studytime', 'failures',
-                      'famrel', 'freetime', 'goout', 'Dalc', 'Walc', 'health', 'absences', 'G1', 'G2', 'G3']
-    binary_values = ['school', 'sex', 'address', 'famsize', 'Pstatus', 'schoolsup',
+    numeric_values_names = ['age', 'Medu', 'Fedu', 'traveltime', 'studytime', 'failures',
+                      'famrel', 'freetime', 'goout', 'health', 'absences', 'G1', 'G2', 'G3']
+    binary_values_names = ['school', 'sex', 'address', 'famsize', 'Pstatus', 'schoolsup',
                      'famsup', 'paid', 'higher', 'activities', 'nursery', 'internet', 'romantic']
-    nominal_values = ['reason', 'guardian', 'Mjob', 'Fjob']
+    nominal_values_names = ['reason', 'guardian', 'Mjob', 'Fjob']
+    output_values_names= ['Dalc', 'Walc']
 
     def __init__(self):
         math_class_data = pd.read_csv(os.path.abspath(
@@ -25,9 +26,9 @@ class DataClass:
                               'failures', 'schoolsup', 'famsup', 'paid', 'activities', 'nursery',
                               'higher', 'internet', 'romantic', 'famrel', 'freetime', 'goout', 'Dalc',
                               'Walc', 'health', 'absences', 'G1', 'G2', 'G3']]
-        self.data_numeric_raw = data[self.numeric_values]
-        self.data_binary_raw = data[self.binary_values]
-        self.data_nominal_raw = data[self.nominal_values]
+        self.data_numeric_raw = data[self.numeric_values_names]
+        self.data_binary_raw = data[self.binary_values_names]
+        self.data_nominal_raw = data[self.nominal_values_names]
 
         self.data_numeric_scaled = self.normal_scaling(self.data_numeric_raw)
         self.data_binary_scaled = self.binary_conversion(self.data_binary_raw)
@@ -35,6 +36,7 @@ class DataClass:
             self.data_nominal_raw)
         self.data_to_network = pd.concat(
             [self.data_numeric_scaled, self.data_binary_scaled, self.data_nominal_scaled], axis=1)
+        self.output_data = self.nominal_conversion(self.output_values_names)
 
     def normal_scaling(self, raw):
         '''
