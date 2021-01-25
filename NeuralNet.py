@@ -62,8 +62,8 @@ class NeuralNetwork:
             self.layers.append(DenseLayer(prev_layer_size,layer_size,activation_function))
             prev_layer_size = layer_size
         self.layers.append(DenseLayer(prev_layer_size,output_layer,"softmax"))
-        for l in self.layers:
-            print(l.weights)
+        # for l in self.layers:
+        #     print(l.weights)
     
     def train(self,train_data,targets,epochs=1000,batch_size=10,learning_rate=0.01):
         for i in range(epochs):
@@ -76,7 +76,7 @@ class NeuralNetwork:
                 # print("Output: ",out)
                 error = cross_entropy_loss(out,target_batch)
                 # print("error: ",error)
-                delta = (out - target_batch)
+                delta = (out - target_batch)/batch_size
                 # delta = np.clip(delta,-1,1)
                 # delta = np.nan_to_num(delta)
                 # print("delta: ",delta)
@@ -87,9 +87,13 @@ class NeuralNetwork:
             self.error_values.append(np.average(l))
 
     def test(self,test_data, test_targets):
+        sum_t = 0
         pred = self.forward_propagate(test_data)
-        err = cross_entropy_loss(pred,test_targets)
-        return 1-err
+        ind = pred.argmax(axis=1)
+        for i,t in zip(ind,test_targets):
+            if t[i] == 1:
+                sum_t += 1
+        return sum_t/ind.shape[0]
 
     def predict(self,data, code_back_to_classes = False):
         result = self.forward_propagate(data)
