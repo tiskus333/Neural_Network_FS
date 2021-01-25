@@ -1,1 +1,6 @@
-__pycache__/NeuralNetwork.cpython-38.pyc
+#ide -related
+/.vscode
+
+
+#other
+/__pycache__
