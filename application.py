@@ -36,7 +36,8 @@ class DataClass:
             self.data_nominal_raw)
         self.data_to_network = pd.concat(
             [self.data_numeric_scaled, self.data_binary_scaled, self.data_nominal_scaled], axis=1)
-        self.output_data = self.nominal_conversion(self.output_values_names)
+        self.output_walc = pd.get_dummies(data["Walc"])
+        self.output_dalc = pd.get_dummies(data["Dalc"])
 
     def normal_scaling(self, raw):
         '''
