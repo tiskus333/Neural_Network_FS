@@ -4,7 +4,7 @@ import os
 import sys
 import pandas as pd
 
-from NeuralNetwork import *
+from NeuralNet import *
 
 
 class DataClass:
