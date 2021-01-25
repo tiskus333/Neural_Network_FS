@@ -91,8 +91,12 @@ class NeuralNetwork:
         err = cross_entropy_loss(pred,test_targets)
         return 1-err
 
-    def predict(self,data):
-        return self.forward_propagate(data)
+    def predict(self,data, code_back_to_classes = False):
+        result = self.forward_propagate(data)
+        if code_back_to_classes:
+            return result.argmax(axis=1)
+        else:
+            return result
     
     def forward_propagate(self,data):
         tmp_data = data
