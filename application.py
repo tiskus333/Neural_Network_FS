@@ -21,6 +21,7 @@ class DataClass:
         port_class_data = pd.read_csv(os.path.abspath(
             '') + "/data/student-por.csv", delimiter=";")
         data = math_class_data.append(port_class_data)
+        data = data.reset_index()
         self.data_raw = data[['school', 'sex', 'age', 'address', 'famsize', 'Pstatus', 'Medu', 'Fedu',
                               'Mjob', 'Fjob', 'reason', 'guardian', 'traveltime', 'studytime',
                               'failures', 'schoolsup', 'famsup', 'paid', 'activities', 'nursery',
