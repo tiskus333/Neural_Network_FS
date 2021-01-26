@@ -50,7 +50,8 @@ class Softmax:
 def cross_entropy_loss(output,label):
     epsilon = 1e-9
     output = np.clip(output,epsilon,1-epsilon)
-    loss = -np.sum(label*np.log(output))/output.shape[0]
+    tmp = label * -np.log(output)
+    loss = np.average(tmp)
     return loss
 
 class NeuralNetwork:
@@ -76,7 +77,7 @@ class NeuralNetwork:
                 # print("Output: ",out)
                 error = cross_entropy_loss(out,target_batch)
                 # print("error: ",error)
-                delta = (out - target_batch)/batch_size
+                delta = error*(out - target_batch)
                 # delta = np.clip(delta,-1,1)
                 # delta = np.nan_to_num(delta)
                 # print("delta: ",delta)
@@ -135,7 +136,7 @@ if __name__ == "__main__":
 
     plt.figure(figsize=(10,7))
     plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap='plasma', s=100, alpha=0.5)
-
+    
     nn = NeuralNetwork(2,[4],3,"relu")
     nn.train(feature_set,one_hot_labels,epochs=100,batch_size=100,learning_rate=0.001)
     print("RESULTS: ")
