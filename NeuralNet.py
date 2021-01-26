@@ -65,25 +65,25 @@ class NeuralNetwork:
         # for l in self.layers:
         #     print(l.weights)
     
-    def train(self,train_data,targets,epochs=1000,batch_size=10,learning_rate=0.01):
+    def train(self, train_data, targets, epochs=1000, batch_size=10, learning_rate=0.01, number_of_prints=100):
         for i in range(epochs):
             l = []
-            for j in range(0,len(train_data)-len(train_data)%batch_size,batch_size):
+            for j in range(0, len(train_data)-len(train_data) % batch_size, batch_size):
                 input_batch = train_data[j:j+batch_size]
                 target_batch = targets[j:j+batch_size]
                 out = self.forward_propagate(input_batch)
                 # out = np.nan_to_num(out)
                 # print("Output: ",out)
-                error = cross_entropy_loss(out,target_batch)
+                error = cross_entropy_loss(out, target_batch)
                 # print("error: ",error)
                 delta = (out - target_batch)/batch_size
                 # delta = np.clip(delta,-1,1)
                 # delta = np.nan_to_num(delta)
                 # print("delta: ",delta)
                 l.append(error)
-                self.back_propagate(input_batch,delta,learning_rate)
-            if (i+1)%(int(epochs/100)) == 0:
-                print("epochs:", i + 1, "==== error:", np.average(l))  
+                self.back_propagate(input_batch, delta, learning_rate)
+            if number_of_prints != 0 and (i+1) % (int(epochs/number_of_prints)) == 0:
+                print("epochs:", i + 1, "==== error:", np.average(l))
             self.error_values.append(np.average(l))
 
     def test(self,test_data, test_targets):
