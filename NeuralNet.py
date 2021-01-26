@@ -27,14 +27,12 @@ class DenseLayer:
 
 class ReLU:
     def forward(self,inputs):
-        return np.clip(inputs,0,5000)
-        # return np.maximum(0,inputs)
+        return np.clip(inputs,0,50)
     def backward(self,inputs):
         return np.where(inputs >= 0.0, 1.0, 0.0)
 
 class Sigmoid:
     def forward(self,inputs):
-        # return 1.0/(1.0+np.exp(np.negative(inputs)))
         return np.exp(np.fmin(inputs, 0)) / (1 + np.exp(-np.abs(inputs)))
     def backward(self,inputs):
         sig = self.forward(inputs)
@@ -63,8 +61,7 @@ class NeuralNetwork:
             self.layers.append(DenseLayer(prev_layer_size,layer_size,activation_function))
             prev_layer_size = layer_size
         self.layers.append(DenseLayer(prev_layer_size,output_layer,"softmax"))
-        # for l in self.layers:
-        #     print(l.weights)
+
     
     def train(self, train_data, targets, epochs=1000, batch_size=10, learning_rate=0.01, number_of_prints=100):
         for i in range(epochs):
@@ -73,14 +70,8 @@ class NeuralNetwork:
                 input_batch = train_data[j:j+batch_size]
                 target_batch = targets[j:j+batch_size]
                 out = self.forward_propagate(input_batch)
-                # out = np.nan_to_num(out)
-                # print("Output: ",out)
                 error = cross_entropy_loss(out, target_batch)
-                # print("error: ",error)
                 delta = error*(out - target_batch)
-                # delta = np.clip(delta,-1,1)
-                # delta = np.nan_to_num(delta)
-                # print("delta: ",delta)
                 l.append(error)
                 self.back_propagate(input_batch, delta, learning_rate)
             if number_of_prints != 0 and (i+1) % (int(epochs/number_of_prints)) == 0:
@@ -138,7 +129,7 @@ if __name__ == "__main__":
     plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap='plasma', s=100, alpha=0.5)
     
     nn = NeuralNetwork(2,[4],3,"relu")
-    nn.train(feature_set,one_hot_labels,epochs=100,batch_size=100,learning_rate=0.001)
+    nn.train(feature_set,one_hot_labels,epochs=1000,batch_size=1000,learning_rate=0.1)
     print("RESULTS: ")
     print(nn.predict([0,-3]))
     print(nn.predict([2,2]))
