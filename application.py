@@ -40,7 +40,8 @@ class DataClass:
         self.output_walc = pd.get_dummies(data["Walc"])
         self.output_dalc = pd.get_dummies(data["Dalc"])
 
-    def normal_scaling(self, raw):
+    @staticmethod
+    def normal_scaling(raw):
         '''
         after this scaling all of columns have distribution N(0,1)
         '''
@@ -50,7 +51,8 @@ class DataClass:
             scaled[column] = (raw_c - raw_c.mean())/raw_c.std()
         return scaled
 
-    def binary_conversion(self, raw):
+    @staticmethod
+    def binary_conversion(raw):
         scaled = raw.copy()
         for column in scaled.columns:
             values = set(scaled[column].values)
@@ -61,7 +63,8 @@ class DataClass:
             scaled[column] = scaled[column].map(d)
         return scaled
 
-    def nominal_conversion(self, raw):
+    @staticmethod
+    def nominal_conversion(raw):
         return pd.get_dummies(raw)
 
     def get_num_of_rows(self):
