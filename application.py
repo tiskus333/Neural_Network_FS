@@ -1,5 +1,11 @@
 #!/usr/bin/python3 -i
 
+'''
+Load convert and normalize data to proper format for our network
+Pawel Kotiuk
+Mateusz Chrusciel
+'''
+
 import os
 import sys
 import pandas as pd

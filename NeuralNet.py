@@ -1,7 +1,13 @@
 #!/usr/bin/python3
 
+'''
+Main file with neural network class 
+Mateusz Chrusciel
+Pawel Kotiuk
+https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
+'''
+
 import numpy as np
-import matplotlib.pyplot as plt
 
 class DenseLayer:
     def __init__(self, n_inputs, n_neurons,activation_function = "relu"):
@@ -17,7 +23,7 @@ class DenseLayer:
         elif activation_function == "softmax":
             self.activation_function = Softmax()
         else:   
-            print("No such function")
+            raise Exception("No such activation function")
 
     def forward(self, inputs):
         layer_output = np.dot(inputs,self.weights) + self.biases
@@ -40,7 +46,6 @@ class Sigmoid:
 
 class Softmax:
     def forward(self,inputs):
-        # print("softmax: ",inputs)
         z = np.exp(inputs - np.max(inputs, axis=-1, keepdims=True))
         prob = z / np.sum(z, axis=-1,keepdims=True)
         return prob
@@ -54,6 +59,7 @@ def cross_entropy_loss(output,label):
 
 class NeuralNetwork:
     def __init__(self,input_layer,hidden_layers = [3,3],output_layer=1,activation_function="relu"):
+        assert(len(hidden_layers) > 0), "Network must have at least one hidden layer"
         self.error_values = []
         self.layers = []
         prev_layer_size = input_layer
@@ -113,28 +119,3 @@ class NeuralNetwork:
                 self.layers[i].derivatives = np.dot(self.layers[i-1].activations.T,delta)
             self.layers[i].biases -= learning_rate * np.sum(delta,axis=0)
             self.layers[i].weights -= learning_rate * self.layers[i].derivatives
-
-
-if __name__ == "__main__":
-    blue = np.random.randn(700, 2) + np.array([0, -3])
-    pink = np.random.randn(700, 2) + np.array([3, 3])
-    yellow = np.random.randn(700, 2) + np.array([-3, 3])
-    feature_set = np.vstack([blue, pink, yellow])
-    labels = np.array([0]*700 + [1]*700 + [2]*700)
-    one_hot_labels = np.zeros((2100, 3))
-    for i in range(2100):
-        one_hot_labels[i, labels[i]] = 1
-
-    plt.figure(figsize=(10,7))
-    plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap='plasma', s=100, alpha=0.5)
-    
-    nn = NeuralNetwork(2,[4],3,"relu")
-    nn.train(feature_set,one_hot_labels,epochs=1000,batch_size=1000,learning_rate=0.1)
-    print("RESULTS: ")
-    print(nn.predict([0,-3]))
-    print(nn.predict([2,2]))
-    print(nn.predict([-2,3]))
-    print("Accuracy = ", nn.test(feature_set[10:20:1],one_hot_labels[10:20:1]))
-    plt.show()
-
-#https://www.kdnuggets.com/2019/08/numpy-neural-networks-computational-graphs.html
